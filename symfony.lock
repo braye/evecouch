@@ -17,6 +17,9 @@
     "doctrine/common": {
         "version": "v2.9.0"
     },
+    "doctrine/couchdb": {
+        "version": "1.0.0-beta4"
+    },
     "doctrine/dbal": {
         "version": "v2.8.0"
     },
@@ -77,17 +80,32 @@
     "egulias/email-validator": {
         "version": "2.1.6"
     },
+    "eveseat/eseye": {
+        "version": "1.1.6"
+    },
     "facebook/webdriver": {
         "version": "1.6.0"
     },
     "fig/link-util": {
         "version": "1.0.0"
     },
+    "guzzlehttp/guzzle": {
+        "version": "6.3.3"
+    },
+    "guzzlehttp/promises": {
+        "version": "v1.3.1"
+    },
+    "guzzlehttp/psr7": {
+        "version": "1.4.2"
+    },
     "jdorn/sql-formatter": {
         "version": "v1.2.17"
     },
     "monolog/monolog": {
         "version": "1.23.0"
+    },
+    "nesbot/carbon": {
+        "version": "1.34.0"
     },
     "nikic/php-parser": {
         "version": "v4.1.0"
@@ -104,11 +122,17 @@
     "phpdocumentor/type-resolver": {
         "version": "0.4.0"
     },
+    "predis/predis": {
+        "version": "v1.1.1"
+    },
     "psr/cache": {
         "version": "1.0.1"
     },
     "psr/container": {
         "version": "1.0.0"
+    },
+    "psr/http-message": {
+        "version": "1.0.1"
     },
     "psr/link": {
         "version": "1.0.0"
