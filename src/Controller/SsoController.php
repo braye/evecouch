@@ -34,7 +34,7 @@ class SsoController extends AbstractController
                 'Content-Type' => 'application/json',
                 'Authorization' => 'Basic ' . base64_encode(getenv('ESI_CLIENT_ID') . ':' . getenv('ESI_SECRET_KEY'))
             ],
-            'form_params' => [
+            'json' => [
                 json_encode(
                     [
                         'grant_type' => 'authorization_code',
