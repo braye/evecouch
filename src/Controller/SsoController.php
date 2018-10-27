@@ -27,7 +27,7 @@ class SsoController extends AbstractController
     {
         $code = $request->query->get('code');
 
-        $client = new GuzzleHttp\Client();
+        $client = new \GuzzleHttp\Client();
         
         $refreshToken = $client->request('POST', 'https://login.eveonline.com/oauth/token',[
             'headers' => [
@@ -38,7 +38,7 @@ class SsoController extends AbstractController
                 json_encode(
                     [
                         'grant_type' => 'authorization_code',
-                        'code' => $refreshToken
+                        'code' => $code
                     ]
                 )
             ]
