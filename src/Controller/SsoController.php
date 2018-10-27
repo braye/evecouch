@@ -4,7 +4,7 @@ namespace App\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use GuzzleHttp\Client;
 
@@ -23,7 +23,7 @@ class SsoController extends AbstractController
     /**
      * @Route("/sso/callback/", name="ssoCallback")
      */
-    public function callback(Response $response, SessionInterface $session)
+    public function callback(Request $request, SessionInterface $session)
     {
         $code = $request->query->get('code');
 
