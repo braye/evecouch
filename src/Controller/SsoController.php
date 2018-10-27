@@ -31,7 +31,6 @@ class SsoController extends AbstractController
         
         $refreshToken = $client->request('POST', 'https://login.eveonline.com/oauth/token',[
             'headers' => [
-                'Content-Type' => 'application/json',
                 'Authorization' => 'Basic ' . base64_encode(getenv('ESI_CLIENT_ID') . ':' . getenv('ESI_SECRET_KEY'))
             ],
             'form_params' => [
