@@ -14,15 +14,6 @@ use Doctrine\CouchDB\HTTP\HTTPException;
 
 class SsoController extends AbstractController
 {
-    /**
-     * @Route("/sso", name="sso")
-     */
-    public function index()
-    {
-        return $this->render('sso/index.html.twig', [
-            'controller_name' => 'SsoController',
-        ]);
-    }
 
     /**
      * @Route("/sso/callback/", name="ssoCallback")
