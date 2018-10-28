@@ -55,7 +55,7 @@ class SsoController extends AbstractController
         try{
             $character = $client->request('POST', 'https://login.eveonline.com/oauth/verify',[
                 'headers' => [
-                    'Authorization' => 'Bearer ' . $accessToken['access_token']
+                    'Authorization' => 'Bearer ' . $accessToken->accessToken
                 ]
             ]);
         } catch (RequestException $e) {
@@ -69,20 +69,20 @@ class SsoController extends AbstractController
         $client = CouchDBClient::create(array('dbname' => 'sso'));
 
         try{
-            $ssoDocument = $client->findDocument($characterInfo['CharacterID']);
+            $ssoDocument = $client->findDocument($characterInfo->CharacterID);
 
             switch($ssoDocument->status){
                 case 200:
                     $document = $ssoDocument->body;
-                    $document['access_token'] = $accessToken['access_token'];
-                    $document['refresh_token'] = $accessToken['refresh_token'];
+                    $document['access_token'] = $accessToken->accessToken;
+                    $document['refresh_token'] = $accessToken->refreshToken;
                     $client->putDocument($document);
                     break;
                 case 404:
                     $client->postDocument([
-                        '_id' => $characterInfo['CharacterID'],
-                        'access_token' => $accessToken['access_token'],
-                        'refresh_token' => $accessToken['refresh_token']
+                        '_id' => $characterInfo->CharacterID,
+                        'access_token' => $accessToken->accessToken,
+                        'refresh_token' => $accessToken->refreshToken
                     ]);
                     break;
                 default:
