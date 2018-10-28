@@ -5,11 +5,10 @@ namespace App\Controller;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
-use Seat\Eseye;
-use Seat\Eseye\Containers\EsiAuthentication;
 use Doctrine\CouchDB\CouchDBClient;
 
 class SsoController extends AbstractController
@@ -53,7 +52,7 @@ class SsoController extends AbstractController
         $accessToken = json_decode($tokenResponse->getBody());
 
         try{
-            $character = $client->request('POST', 'https://login.eveonline.com/oauth/verify',[
+            $character = $client->request('GET', 'https://login.eveonline.com/oauth/verify',[
                 'headers' => [
                     'Authorization' => 'Bearer ' . $accessToken->access_token
                 ]
@@ -76,11 +75,12 @@ class SsoController extends AbstractController
                     $document = $ssoDocument->body;
                     $document['access_token'] = $accessToken->access_token;
                     $document['refresh_token'] = $accessToken->refresh_token;
-                    $client->putDocument($document);
+                    $client->putDocument($document, $document['_id'], $document['_rev']);
                     break;
                 case 404:
                     $client->postDocument([
-                        '_id' => $characterInfo->CharacterID,
+                        // couch only allows strings as IDs
+                        '_id' => (string)$characterInfo->CharacterID,
                         'access_token' => $accessToken->access_token,
                         'refresh_token' => $accessToken->refresh_token
                     ]);
@@ -96,9 +96,8 @@ class SsoController extends AbstractController
         }
 
         $session = new Session();
-        $session->start();
-        $session->set('CharacterID', $characterInfo['CharacterID']);
+        $session->set('CharacterID', $characterInfo->CharacterID);
 
-
+        return $this->redirectToRoute('home');
     }
 }
