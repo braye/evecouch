@@ -10,6 +10,7 @@ use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 use Doctrine\CouchDB\CouchDBClient;
+use Doctrine\CouchDB\HTTP\HTTPException;
 
 class SsoController extends AbstractController
 {
