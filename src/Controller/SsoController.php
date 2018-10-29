@@ -12,13 +12,21 @@ use GuzzleHttp\Exception\RequestException;
 use Doctrine\CouchDB\CouchDBClient;
 use Doctrine\CouchDB\HTTP\HTTPException;
 
+use App\CouchDB\DocumentManager;
+
+use App\Security\EveSsoAuthenticator;
+use Symfony\Component\Security\Guard\GuardAuthenticatorHandler;
+
+use App\Entity\User;
+use App\Entity\EsiToken;
+
 class SsoController extends AbstractController
 {
 
     /**
      * @Route("/sso/callback/", name="ssoCallback")
      */
-    public function callback(Request $request, SessionInterface $session)
+    public function callback(EveSsoAuthenticator $authenticator, GuardAuthenticatorHandler $guardHandler, Request $request, SessionInterface $session)
     {
         $code = $request->query->get('code');
 
@@ -57,39 +65,29 @@ class SsoController extends AbstractController
 
         $characterInfo = json_decode($character->getBody());
 
-        $client = CouchDBClient::create(array('dbname' => 'sso'));
+        $dm = new DocumentManager('users');
 
-        try{
-            $ssoDocument = $client->findDocument($characterInfo->CharacterID);
+        $user = $this->getUser();
 
-            switch($ssoDocument->status){
-                case 200:
-                    $document = $ssoDocument->body;
-                    $document['access_token'] = $accessToken->access_token;
-                    $document['refresh_token'] = $accessToken->refresh_token;
-                    $client->putDocument($document, $document['_id'], $document['_rev']);
-                    break;
-                case 404:
-                    $client->postDocument([
-                        // couch only allows strings as IDs
-                        '_id' => (string)$characterInfo->CharacterID,
-                        'access_token' => $accessToken->access_token,
-                        'refresh_token' => $accessToken->refresh_token
-                    ]);
-                    break;
-                default:
-                    // something bad happened
-                    break;
-            }
-        } catch (HTTPException $e) {
-            return $this->render('sso/error.html.twig', [
-                'error_message' => $e->getMessage()
-            ]);
+        $newUser = new User();
+        $newUser->setCharacterId($characterInfo->CharacterID);
+        $newUser->setCharacterName($characterInfo->CharacterName);
+        if(!empty($user)){
+            $newUser->setParentCharacterId($user->getCharacterId());
         }
+        $newUser->setAccessToken($accessToken->access_token);
+        $newUser->setRefreshToken($accessToken->refresh_token);
 
-        $session = new Session();
-        $session->set('CharacterID', $characterInfo->CharacterID);
+        $dm->save($newUser);
+
+        $guardHandler->authenticateUserAndHandleSuccess(
+            $newUser,          // the User object you just created
+            $request,
+            $authenticator, // authenticator whose onAuthenticationSuccess you want to use
+            'main'          // the name of your firewall in security.yaml
+        );
 
         return $this->redirectToRoute('home');
+
     }
 }
