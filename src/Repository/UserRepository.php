@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Symfony\Bridge\Doctrine\RegistryInterface;
+use App\CouchDB\DocumentManager;
 
 /**
  * @method User|null find($id, $lockMode = null, $lockVersion = null)
@@ -17,6 +18,28 @@ class UserRepository extends ServiceEntityRepository
     public function __construct(RegistryInterface $registry)
     {
         parent::__construct($registry, User::class);
+    }
+
+    public function find($id, $lockMode = null, $lockVersion = null)
+    {
+        if(is_array($id)){
+            $id = $id['_id'];
+        }
+        $dm = new DocumentManager('users');
+        $userDoc = $dm->getById($id);
+        if(!empty($userDoc)){
+            $user = new User();
+            $user->setCharacterId($userDoc['_id']);
+            $user->setCharacterName($userDoc['characterName']);
+            $user->setRoles($userDoc['roles']);
+            $user->setParentCharacterId($userDoc['parentCharacterId']);
+            $user->setAccessToken($userDoc['accessToken']);
+            $user->setRefreshToken($userDoc['refreshToken']);
+            return $user;
+        } else {
+            return null;
+        }
+        
     }
 
 //    /**

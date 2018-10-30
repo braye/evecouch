@@ -12,22 +12,23 @@ use App\CouchDB\CouchEntity;
 class User extends CouchEntity implements UserInterface
 {
     /**
-     * @Id(strategy="ASSIGNED")
+     * @ORM\Id
+     * @ORM\Column(type="string", length=255)
      */
     protected $_id;
 
     /**
-     * @Field(type="string")
+     * @ORM\Column(type="string", length=255)
      */
     protected $characterName;
 
     /**
-     * @Field(type="mixed")
+     * @ORM\Column(type="string", length=255)
      */
     protected $roles = [];
 
     /**
-     * @ReferenceOne(targetDocument="user")
+     * @ORM\Column(type="string", length=255)
      */
     protected $parentCharacterId;
 

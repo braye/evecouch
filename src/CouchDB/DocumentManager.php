@@ -24,11 +24,28 @@ class DocumentManager
 
             switch($exists->status){
                 case 200:
-                    $client->putDocument($document, $document['_id'], $exists['_rev']);
+                    $client->putDocument($document, $document['_id'], $exists->body['_rev']);
                     break;
                 case 404:
                     $client->postDocument($document);
                     break;
+            }
+        } catch (HTTPException $e) {
+            throw $e;
+        }
+    }
+
+    public function getById(string $id)
+    {
+        try{
+            $client = $this->client;
+            $doc = $client->findDocument($id);
+
+            switch($doc->status){
+                case 200:
+                    return $doc->body;
+                case 404:
+                    return null;
             }
         } catch (HTTPException $e) {
             throw $e;
