@@ -1,0 +1,25 @@
+{
+  "name": "evecouch",
+  "version": "1.0.0",
+  "description": "Collection of EVE API tools for personal use.",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/braye/evecouch.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/braye/evecouch/issues"
+  },
+  "homepage": "https://github.com/braye/evecouch#readme",
+  "dependencies": {
+    "bulma": "^0.7.2"
+  }
+}
