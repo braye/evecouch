@@ -72,7 +72,7 @@ class SsoController extends AbstractController
         $newUser = new User();
         $newUser->setCharacterId($characterInfo->CharacterID);
         $newUser->setCharacterName($characterInfo->CharacterName);
-        if(!empty($user)){
+        if(!empty($user) && $user->getCharacterId() != $characterInfo->CharacterID){
             $newUser->setParentCharacterId($user->getCharacterId());
         }
         $newUser->setAccessToken($accessToken->access_token);
