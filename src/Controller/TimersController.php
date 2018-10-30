@@ -22,7 +22,8 @@ class TimersController extends AbstractController
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
 
         $configuration = Configuration::getInstance();
-        $configuration->setfile_cache_location(getenv('ESI_CACHE_DIRECTORY'));
+        $configuration->file_cache_location = getenv('ESI_CACHE_DIRECTORY');
+        $configuration->logfile_location = getenv('ESI_LOG_DIRECTORY');
         $configuration->cache = FileCache::class;
 
         $user = $this->getUser();
@@ -35,13 +36,17 @@ class TimersController extends AbstractController
 
         $esi = new Eseye($authentication);
 
-        $characterInfo = $esi->invoke('get', '/characters/{character_id}/', [
-            'character_id' => $user->getCharacterId()
-        ]);
+        try{
+            $characterInfo = $esi->invoke('get', '/characters/{character_id}/', [
+                'character_id' => $user->getCharacterId()
+            ]);
 
-        $structures = $esi->invoke('get', '/corporations/{corporation_id}/structures/', [
-            'corporation_id' => $characterInfo->corporation_id
-        ]);
+            $structures = $esi->invoke('get', '/corporations/{corporation_id}/structures/', [
+                'corporation_id' => $characterInfo->corporation_id
+            ]);
+        } catch(Exception $e){
+            return null;
+        }
 
         return new JsonResponse($structures);
         // return $this->render('timers/index.html.twig', [
