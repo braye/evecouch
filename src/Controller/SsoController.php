@@ -67,14 +67,14 @@ class SsoController extends AbstractController
 
         $dm = new DocumentManager('users');
 
-        $user = $this->getDoctrine()->getRepository(User::class)->find($characterInfo->CharacterID);
+        $charUser = $this->getDoctrine()->getRepository(User::class)->find($characterInfo->CharacterID);
 
-        if(empty($user)){
+        if(empty($charUser)){
             $currentUser = $this->getUser();            
             $user = new User();
             $user->setCharacterId($characterInfo->CharacterID);
             $user->setCharacterName($characterInfo->CharacterName);
-            if(!empty($user) && $user->getCharacterId() != $characterInfo->CharacterID){
+            if(!empty($currentUser) && $currentUser->getCharacterId() != $characterInfo->CharacterID){
                 $user->setParentCharacterId($user->getCharacterId());
                 $user->setRoles($user->getRoles());
             }
@@ -82,6 +82,11 @@ class SsoController extends AbstractController
             $user->setRefreshToken($accessToken->refresh_token);
 
             $dm->save($user);
+        } else {
+            $charUser->setAccessToken($accessToken->access_token);
+            $charUser->setRefreshToken($accessToken->refresh_token);
+            $dm->save($charUser);
+            $user = $charUser;
         }
 
         $guardHandler->authenticateUserAndHandleSuccess(
