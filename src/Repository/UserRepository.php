@@ -42,6 +42,15 @@ class UserRepository extends ServiceEntityRepository
         
     }
 
+    public function findOneBy(array $criteria, array $orderBy = null)
+    {
+        if(!empty($criteria['_id'])){
+            return $this->find($criteria['_id']);
+        } else {
+            return null;
+        }
+    }
+
 //    /**
 //     * @return User[] Returns an array of User objects
 //     */

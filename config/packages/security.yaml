@@ -13,6 +13,7 @@ security:
             security: false
         main:
             anonymous: true
+            switch_user: true
 
             # activate different ways to authenticate
 

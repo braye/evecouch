@@ -67,21 +67,25 @@ class SsoController extends AbstractController
 
         $dm = new DocumentManager('users');
 
-        $user = $this->getUser();
+        $user = $this->getDoctrine()->getRepository(User::class)->find($characterInfo->CharacterID);
 
-        $newUser = new User();
-        $newUser->setCharacterId($characterInfo->CharacterID);
-        $newUser->setCharacterName($characterInfo->CharacterName);
-        if(!empty($user) && $user->getCharacterId() != $characterInfo->CharacterID){
-            $newUser->setParentCharacterId($user->getCharacterId());
+        if(empty($user)){
+            $currentUser = $this->getUser();            
+            $user = new User();
+            $user->setCharacterId($characterInfo->CharacterID);
+            $user->setCharacterName($characterInfo->CharacterName);
+            if(!empty($user) && $user->getCharacterId() != $characterInfo->CharacterID){
+                $user->setParentCharacterId($user->getCharacterId());
+                $user->setRoles($user->getRoles());
+            }
+            $user->setAccessToken($accessToken->access_token);
+            $user->setRefreshToken($accessToken->refresh_token);
+
+            $dm->save($user);
         }
-        $newUser->setAccessToken($accessToken->access_token);
-        $newUser->setRefreshToken($accessToken->refresh_token);
-
-        $dm->save($newUser);
 
         $guardHandler->authenticateUserAndHandleSuccess(
-            $newUser,          // the User object you just created
+            $user,          // the User object you just created
             $request,
             $authenticator, // authenticator whose onAuthenticationSuccess you want to use
             'main'          // the name of your firewall in security.yaml
