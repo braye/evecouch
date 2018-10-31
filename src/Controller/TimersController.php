@@ -9,15 +9,16 @@ use Seat\Eseye\Cache\FileCache;
 use Seat\Eseye\Configuration;
 use Seat\Eseye\Containers\EsiAuthentication;
 use Seat\Eseye\Eseye;
+use Seat\Eseye\Exceptions\RequestFailedException;
 
 use Symfony\Component\HttpFoundation\JsonResponse;
 
 class TimersController extends AbstractController
 {
     /**
-     * @Route("/timers", name="structureFuelTimers")
+     * @Route("/fueltimers", name="structureFuelTimers")
      */
-    public function index()
+    public function fuelTimers()
     {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
 
@@ -44,11 +45,21 @@ class TimersController extends AbstractController
             $structures = $esi->invoke('get', '/corporations/{corporation_id}/structures/', [
                 'corporation_id' => $characterInfo->corporation_id
             ]);
-        } catch(Exception $e){
-            return null;
+
+            $structureDetails = array();
+
+            foreach($structures as $structure){
+                $structureDetails[] = $esi->invoke('get', '/universe/structures/{structure_id}', [
+                    'structure_id' => $structure->structure_id
+                ]);
+            }
+        } catch(RequestFailedException $e){
+            return $this->render('base.html.twig', [
+                'error_message' => $e->getMessage()
+            ]);
         }
 
-        return new JsonResponse($structures);
+        return new JsonResponse($structureDetails);
         // return $this->render('timers/index.html.twig', [
         //     'controller_name' => 'TimersController',
         // ]);
