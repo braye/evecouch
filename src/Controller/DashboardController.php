@@ -10,7 +10,7 @@ use Symfony\Component\HttpFoundation\Session\SessionInterface;
 class DashboardController extends AbstractController
 {
     /**
-     * @Route("/dashboard", name="home")
+     * @Route("/", name="home")
      */
     public function index()
     {   

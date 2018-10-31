@@ -8,10 +8,9 @@
         {% endblock %}
     </head>
     <body>
-        <nav class="navbar" role="navigation" aria-label="main navigation">
+        <nav class="navbar is-dark" role="navigation" aria-label="main navigation">
             <div class="navbar-brand">
                 <a class="navbar-item" href="/">
-                    <img src="https://bulma.io/images/bulma-logo.png" width="112" height="28">
                 </a>
 
                 <a role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false" data-target="navbarBasicExample">
@@ -27,11 +26,11 @@
                     Home
                 </a>
 
-                <a href="/timers" class="navbar-item">
-                    Timers
+                <a href="/fueltimers" class="navbar-item">
+                    Structure Fuel Timers
                 </a>
 
-                <div class="navbar-item has-dropdown is-hoverable">
+                {# <div class="navbar-item has-dropdown is-hoverable">
                     <a class="navbar-link">
                         More
                     </a>
@@ -51,38 +50,47 @@
                         Report an issue
                     </a>
                     </div>
-                </div>
+                </div> #}
             </div>
 
                 <div class="navbar-end">
                 <div class="navbar-item">
+                {% if is_granted('IS_AUTHENTICATED_FULLY') %}
+                    <img src="https://image.eveonline.com/Character/{{app.user.characterId}}_128.jpg" alt="">
+                    <span>&nbsp;{{app.user.username}}&nbsp;</span>
+                    <a href="/logout" class="button is-light">Log Out</a>
+                {% else %}
                     <div class="buttons">
                         <a href="https://login.eveonline.com/oauth/authorize?response_type=code&redirect_uri=https://nearlyepic.space/sso/callback&client_id=2e7f882b95f04b1291e96c2929dc7bc5&scope=esi-corporations.read_structures.v1 esi-wallet.read_corporation_wallets.v1 esi-universe.read_structures.v1
 " class="button is-light">
                             Log in
                         </a>
                     </div>
+                {% endif %}
                 </div>
                 </div>
             </div>
         </nav>
         <div class="container">
-        {% if error_message is defined %}
-            <section class="hero is-danger is-bold is-medium">
-                <div class="hero-body">
-                    <div class="container">
-                        <h1 class="title">
-                            Whoops! There was an error:
-                        </h1>
-                        <h2 class="subtitle">
-                            {{ error_message }}
-                        </h2>
+            <section class="section">
+            {% if error_message is defined %}
+                <section class="hero is-danger is-bold is-medium">
+                    <div class="hero-body">
+                        <div class="container">
+                            <h1 class="title">
+                                Whoops! There was an error:
+                            </h1>
+                            <h2 class="subtitle">
+                                {{ error_message }}
+                            </h2>
+                        </div>
                     </div>
-                </div>
+                </section>
+            {% endif %}
+                {% block body %}{% endblock %}
+                {% block javascripts %}{% endblock %}
             </section>
-        {% endif %}
-            {% block body %}{% endblock %}
-            {% block javascripts %}{% endblock %}
         </div>
+        
     </body>
 </html>

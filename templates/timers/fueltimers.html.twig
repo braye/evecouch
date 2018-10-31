@@ -1,0 +1,35 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Structure Fuel Timers{% endblock %}
+
+{% block body %}
+<h1 class="title">Structure Fuel Timers</h1>
+{% if structures|length > 0 %}
+<table class="table">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>System</th>
+            <th>Fuel Expires</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for structure in structures %}
+            <tr>
+                <td>{{structure.name}}</td>
+                <td>{{structure.system_name}}</td>
+                {% if structure.fuel_expires is defined %}
+                <td>{{structure.fuel_expires}}</td>
+                {% else %}
+                <td>N/A</td>
+                {% endif %}
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+    <div class="notification is-warning">
+        It looks like your corporation doesn't have any structures that require fueling.
+    </div>
+{% endif %}
+{% endblock %}
