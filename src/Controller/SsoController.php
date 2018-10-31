@@ -58,7 +58,7 @@ class SsoController extends AbstractController
                 ]
             ]);
         } catch (RequestException $e) {
-            return $this->render('sso/error.html.twig', [
+            return $this->render('base.html.twig', [
                 'error_message' => $e->getMessage()
             ]);
         }
@@ -74,6 +74,7 @@ class SsoController extends AbstractController
             $user = new User();
             $user->setCharacterId($characterInfo->CharacterID);
             $user->setCharacterName($characterInfo->CharacterName);
+            // used when adding additional characters to an account
             if(!empty($currentUser) && $currentUser->getCharacterId() != $characterInfo->CharacterID){
                 $user->setParentCharacterId($user->getCharacterId());
                 $user->setRoles($user->getRoles());
@@ -90,10 +91,10 @@ class SsoController extends AbstractController
         }
 
         $guardHandler->authenticateUserAndHandleSuccess(
-            $user,          // the User object you just created
+            $user,
             $request,
-            $authenticator, // authenticator whose onAuthenticationSuccess you want to use
-            'main'          // the name of your firewall in security.yaml
+            $authenticator,
+            'main'
         );
 
         return $this->redirectToRoute('home');
