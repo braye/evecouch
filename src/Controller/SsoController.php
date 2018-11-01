@@ -17,6 +17,10 @@ use App\CouchDB\DocumentManager;
 use App\Security\EveSsoAuthenticator;
 use Symfony\Component\Security\Guard\GuardAuthenticatorHandler;
 
+use Seat\Eseye\Configuration;
+use Seat\Eseye\Containers\EsiAuthentication;
+use Seat\Eseye\Eseye;
+
 use App\Entity\User;
 
 class SsoController extends AbstractController
