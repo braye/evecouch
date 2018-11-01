@@ -36,8 +36,7 @@ class TimersController extends AbstractController
 
         $repository = $this->getDoctrine()->getRepository(CorpStructureList::class);
 
-        // $corpStructureList = $repository->find(['_id' => $user->getCorporationId()]);
-        $corpStructureList = $repository->find(['_id' => 98285237]);
+        $corpStructureList = $repository->find(['_id' => $user->getCorporationId()]);
 
         // default to updating every 12h
         if(empty($corpStructureList) || (gmdate('U') < $corpStructureList->updated + 43200)){
@@ -70,8 +69,7 @@ class TimersController extends AbstractController
 
         $structureList = new CorpStructureList();
         $structureList->setUpdated(gmdate('U'));
-        // $structureList->setCorporationId($user->getCorporationId());
-        $structureList->setCorporationId(98285237);
+        $structureList->setCorporationId($user->getCorporationId());
 
         try{
             $characterInfo = $esi->invoke('get', '/characters/{character_id}/', [
