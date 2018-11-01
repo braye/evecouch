@@ -16,10 +16,10 @@
     <tbody>
         {% for structure in structures %}
             <tr>
-                <td>{{structure.name}}</td>
+                <td>{{structure.structure_name}}</td>
                 <td>{{structure.system_name}}</td>
-                {% if structure.fuel_expires is defined %}
-                <td>{{structure.fuel_expires}}</td>
+                {% if structure.fuel_expires != 0 %}
+                <td>{{structure.fuel_expires|date("Y-m-d H:i EVE")}}</td>
                 {% else %}
                 <td>N/A</td>
                 {% endif %}

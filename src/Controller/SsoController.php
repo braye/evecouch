@@ -18,7 +18,6 @@ use App\Security\EveSsoAuthenticator;
 use Symfony\Component\Security\Guard\GuardAuthenticatorHandler;
 
 use App\Entity\User;
-use App\Entity\EsiToken;
 
 class SsoController extends AbstractController
 {
@@ -70,7 +69,7 @@ class SsoController extends AbstractController
         $charUser = $this->getDoctrine()->getRepository(User::class)->find($characterInfo->CharacterID);
 
         if(empty($charUser)){
-            $currentUser = $this->getUser();            
+            $currentUser = $this->getUser();
             $user = new User();
             $user->setCharacterId($characterInfo->CharacterID);
             $user->setCharacterName($characterInfo->CharacterName);

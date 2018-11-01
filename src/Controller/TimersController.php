@@ -14,6 +14,9 @@ use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
 use Symfony\Component\HttpFoundation\JsonResponse;
 
+use App\Entity\CorpStructureList;
+use App\CouchDB\DocumentManager;
+
 class TimersController extends AbstractController
 {
     /**
@@ -29,6 +32,25 @@ class TimersController extends AbstractController
             ]);
         }
 
+        $user = $this->getUser();
+
+        $repository = $this->getDoctrine()->getRepository(CorpStructureList::class);
+
+        // $corpStructureList = $repository->find(['_id' => $user->getCorporationId()]);
+        $corpStructureList = $repository->find(['_id' => 98285237]);
+
+        // default to updating every 12h
+        if(empty($corpStructureList) || (gmdate('U') < $corpStructureList->updated + 43200)){
+            $corpStructureList = $this->updateStructures();
+        }
+        // return new JsonResponse($structures);
+        return $this->render('timers/fueltimers.html.twig', [
+            'structures' => $corpStructureList->getStructures(),
+        ]);
+    }
+
+    private function updateStructures()
+    {
         $configuration = Configuration::getInstance();
         $configuration->file_cache_location = getenv('ESI_CACHE_DIRECTORY');
         $configuration->logfile_location = getenv('ESI_LOG_DIRECTORY');
@@ -44,16 +66,20 @@ class TimersController extends AbstractController
 
         $esi = new Eseye($authentication);
 
+        $dm = new DocumentManager('structures');
+
+        $structureList = new CorpStructureList();
+        $structureList->setUpdated(gmdate('U'));
+        // $structureList->setCorporationId($user->getCorporationId());
+        $structureList->setCorporationId(98285237);
+
         try{
             $characterInfo = $esi->invoke('get', '/characters/{character_id}/', [
                 'character_id' => $user->getCharacterId()
             ]);
-
             $structures = $esi->invoke('get', '/corporations/{corporation_id}/structures/', [
                 'corporation_id' => $characterInfo->corporation_id
             ]);
-
-            $structureDetails = array();
 
             foreach($structures as $structure){
                 $structure->details = $esi->invoke('get', '/universe/structures/{structure_id}', [
@@ -66,35 +92,23 @@ class TimersController extends AbstractController
                 
                 if(!empty($structure->fuel_expires)){
                     $fuelDate = new \DateTime($structure->fuel_expires);
-                    $structure->fuel_expires = $fuelDate->format('Y-m-d H:i EVE');
                 } else {
-                    $fuelDate = new \DateTime('9999-12-31 00:00:00');
+                    $fuelDate = new \DateTime('1970-01-01 00:00:00');
                 }
+
                 $structureDetails[] = [
-                    'name' =>  $structure->details->name,
+                    'structure_id' => $structure->structure_id,
+                    'structure_name' => $structure->details->name,
                     'system_name' => $structure->system_name,
-                    'fuel_expires' => empty($structure->fuel_expires) ? 'N/A' : $structure->fuel_expires,
-                    'fuelDate' => $fuelDate
+                    'fuel_expires' => $fuelDate->format('U')
                 ];
             }
-        } catch(RequestFailedException $e){
-            return $this->render('base.html.twig', [
-                'error_message' => $e->getMessage()
-            ]);
+        } catch (RequestFailedException $e) {
+            throw $e;
         }
 
-
-        usort($structureDetails, function($a, $b){
-            if($a['fuelDate'] == $b['fuelDate']){
-                return 0;
-            }
-
-            return ($a['fuelDate'] < $b['fuelDate']) ? -1 : 1;
-        });
-
-        // return new JsonResponse($structures);
-        return $this->render('timers/fueltimers.html.twig', [
-            'structures' => $structureDetails,
-        ]);
+        $structureList->setStructures($structureDetails);
+        $dm->save($structureList);
+        return $structureList;
     }
 }

@@ -42,6 +42,11 @@ class User extends CouchEntity implements UserInterface
      */
     protected $refreshToken;
 
+    /**
+     * @ORM\Column(type="string", length=255)
+     */
+    private $corporationId;
+
     public function getCharacterId(): ?string
     {
         return $this->_id;
@@ -147,6 +152,18 @@ class User extends CouchEntity implements UserInterface
     public function setRefreshToken(string $refreshToken): self
     {
         $this->refreshToken = $refreshToken;
+
+        return $this;
+    }
+
+    public function getCorporationId(): ?string
+    {
+        return $this->corporationId;
+    }
+
+    public function setCorporationId(string $corporationId): self
+    {
+        $this->corporationId = $corporationId;
 
         return $this;
     }
