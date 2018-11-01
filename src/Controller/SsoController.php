@@ -20,6 +20,7 @@ use Symfony\Component\Security\Guard\GuardAuthenticatorHandler;
 use Seat\Eseye\Configuration;
 use Seat\Eseye\Containers\EsiAuthentication;
 use Seat\Eseye\Eseye;
+use Seat\Eseye\Cache\FileCache;
 
 use App\Entity\User;
 
@@ -47,7 +48,7 @@ class SsoController extends AbstractController
             ]);
 
         } catch (RequestException $e) {
-            return $this->render('sso/error.html.twig', [
+            return $this->render('base.html.twig', [
                 'error_message' => $e->getMessage()
             ]);
         }
