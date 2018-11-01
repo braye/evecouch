@@ -91,7 +91,7 @@ class TimersController extends AbstractController
                 if(!empty($structure->fuel_expires)){
                     $fuelDate = new \DateTime($structure->fuel_expires);
                 } else {
-                    $fuelDate = new \DateTime('1970-01-01 00:00:00');
+                    $fuelDate = new \DateTime('9999-12-31 23:59:59');
                 }
 
                 $structureDetails[] = [
@@ -104,6 +104,13 @@ class TimersController extends AbstractController
         } catch (RequestFailedException $e) {
             throw $e;
         }
+
+        usort($structureDetails, function($a, $b){
+            if($a['fuel_expires'] == $b['fuel_expires']){
+                return 0;
+            }
+            return ($a['fuel_expires'] < $b['fuel_expires']) ? -1 : 1;
+        });
 
         $structureList->setStructures($structureDetails);
         $dm->save($structureList);

@@ -80,6 +80,25 @@ class SsoController extends AbstractController
             }
             $user->setAccessToken($accessToken->access_token);
             $user->setRefreshToken($accessToken->refresh_token);
+            // all this for one little ID value...
+            $configuration = Configuration::getInstance();
+            $configuration->file_cache_location = getenv('ESI_CACHE_DIRECTORY');
+            $configuration->logfile_location = getenv('ESI_LOG_DIRECTORY');
+            $configuration->cache = FileCache::class;
+
+            $authentication = new EsiAuthentication([
+                'client_id'     => getenv('ESI_CLIENT_ID'),
+                'secret'        => getenv('ESI_SECRET_KEY'),
+                'refresh_token' => $user->getRefreshToken(),
+            ]);
+
+            $esi = new Eseye($authentication);
+
+            $characterInfo = $esi->invoke('get', '/characters/{character_id}/', [
+                'character_id' => $user->getCharacterId()
+            ]);
+
+            $user->setCorporationId($characterInfo->corporation_id);
 
             $dm->save($user);
         } else {
