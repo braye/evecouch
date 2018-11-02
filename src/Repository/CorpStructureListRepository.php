@@ -27,20 +27,16 @@ class CorpStructureListRepository extends ServiceEntityRepository
             $id = $id['_id'];
         }
         $dm = new DocumentManager('users');
-        $userDoc = $dm->getById($id);
-        if(!empty($userDoc)){
-            $user = new User();
-            $user->setCharacterId($userDoc['_id']);
-            $user->setCharacterName($userDoc['characterName']);
-            $user->setRoles($userDoc['roles']);
-            $user->setParentCharacterId($userDoc['parentCharacterId']);
-            $user->setAccessToken($userDoc['accessToken']);
-            $user->setRefreshToken($userDoc['refreshToken']);
-            return $user;
+        $dococ = $dm->getById($id);
+        if(!empty($doc)){
+            $list = new CorpStructureList();
+            $list->setId($doc['_id']);
+            $list->setUpdated($doc['updated']);
+            $list->setStructures($doc['structures']);
+            return $list;
         } else {
             return null;
         }
-        
     }
 
 //    /**

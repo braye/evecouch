@@ -40,11 +40,17 @@ class TimersController extends AbstractController
 
         // default to updating every 12h
         if(empty($corpStructureList) || (gmdate('U') < $corpStructureList->updated + 43200)){
-            $corpStructureList = $this->updateStructures();
+            try{
+                $corpStructureList = $this->updateStructures();
+            } catch (RequestFailedException $e){
+                return $this->render('base.html.twig', [
+                    'error_message' => $e->getMessage()
+                ]);
+            }
         }
-        // return new JsonResponse($structures);
+
         return $this->render('timers/fueltimers.html.twig', [
-            'structures' => $corpStructureList->getStructures(),
+            'structures' => $corpStructureList->structures,
         ]);
     }
 
@@ -102,9 +108,7 @@ class TimersController extends AbstractController
                 ];
             }
         } catch (RequestFailedException $e) {
-            return $this->render('base.html.twig', [
-                'error_message' => $e->getMessage()
-            ]);
+            throw $e;
         }
 
         usort($structureDetails, function($a, $b){
