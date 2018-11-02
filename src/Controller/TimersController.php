@@ -50,7 +50,7 @@ class TimersController extends AbstractController
         }
 
         return $this->render('timers/fueltimers.html.twig', [
-            'structures' => $corpStructureList->structures,
+            'structures' => $corpStructureList->getStructures(),
         ]);
     }
 
