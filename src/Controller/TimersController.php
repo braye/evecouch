@@ -32,6 +32,8 @@ class TimersController extends AbstractController
             ]);
         }
 
+        $refresh = $request->query->get('refresh');
+
         $user = $this->getUser();
 
         $repository = $this->getDoctrine()->getRepository(CorpStructureList::class);
@@ -39,7 +41,7 @@ class TimersController extends AbstractController
         $corpStructureList = $repository->find($user->getCorporationId());
 
         // default to updating every 12h
-        if(empty($corpStructureList) || (gmdate('U') < $corpStructureList->updated + 43200)){
+        if(empty($corpStructureList) || (gmdate('U') < $corpStructureList->updated + 43200) || !empty($refresh)){
             try{
                 $corpStructureList = $this->updateStructures();
             } catch (RequestFailedException $e){
