@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\HttpFoundation\Request;
 
 use Seat\Eseye\Cache\FileCache;
 use Seat\Eseye\Configuration;
@@ -22,7 +23,7 @@ class TimersController extends AbstractController
     /**
      * @Route("/fueltimers", name="structureFuelTimers")
      */
-    public function fuelTimers()
+    public function fuelTimers(Request $request)
     {
         try{
             $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
