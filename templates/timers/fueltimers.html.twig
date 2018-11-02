@@ -18,7 +18,7 @@
             <tr>
                 <td>{{structure.structure_name}}</td>
                 <td>{{structure.system_name}}</td>
-                {% if structure.fuel_expires != 0 %}
+                {% if structure.fuel_expires != 253402300799 %}
                 <td>{{structure.fuel_expires|date("Y-m-d H:i EVE")}}</td>
                 {% else %}
                 <td>N/A</td>
