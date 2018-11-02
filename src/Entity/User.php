@@ -45,7 +45,7 @@ class User extends CouchEntity implements UserInterface
     /**
      * @ORM\Column(type="string", length=255)
      */
-    private $corporationId;
+    protected $corporationId;
 
     public function getCharacterId(): ?string
     {
