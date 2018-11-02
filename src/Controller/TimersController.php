@@ -103,7 +103,7 @@ class TimersController extends AbstractController
             }
         } catch (RequestFailedException $e) {
             return $this->render('base.html.twig', [
-                'error_message' -> $e->getMessage()
+                'error_message' => $e->getMessage()
             ]);
         }
 
