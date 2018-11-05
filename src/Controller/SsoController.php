@@ -23,6 +23,7 @@ use Seat\Eseye\Eseye;
 use Seat\Eseye\Cache\FileCache;
 
 use App\Entity\User;
+use App\Api\Esi;
 
 class SsoController extends AbstractController
 {
@@ -85,33 +86,27 @@ class SsoController extends AbstractController
             }
             $user->setAccessToken($accessToken->access_token);
             $user->setRefreshToken($accessToken->refresh_token);
-            // all this for one little ID value...
-            $configuration = Configuration::getInstance();
-            $configuration->file_cache_location = getenv('ESI_CACHE_DIRECTORY');
-            $configuration->logfile_location = getenv('ESI_LOG_DIRECTORY');
-            $configuration->cache = FileCache::class;
-
-            $authentication = new EsiAuthentication([
-                'client_id'     => getenv('ESI_CLIENT_ID'),
-                'secret'        => getenv('ESI_SECRET_KEY'),
-                'refresh_token' => $user->getRefreshToken(),
-            ]);
-
-            $esi = new Eseye($authentication);
-
-            $characterInfo = $esi->invoke('get', '/characters/{character_id}/', [
-                'character_id' => $user->getCharacterId()
-            ]);
-
-            $user->setCorporationId($characterInfo->corporation_id);
-
-            $dm->save($user);
         } else {
             $charUser->setAccessToken($accessToken->access_token);
             $charUser->setRefreshToken($accessToken->refresh_token);
-            $dm->save($charUser);
             $user = $charUser;
         }
+
+        $esi = Esi::getApiHandleForUser($user);
+
+        $characterInfo = $esi->invoke('get', '/characters/{character_id}/', [
+            'character_id' => $user->getCharacterId()
+        ]);
+        
+        $user->setCorporationId($characterInfo->corporation_id);
+
+        $roles = $esi->invoke('get', '/characters/{character_id}/roles/', [
+                'character_id' => $user->getCharacterId()
+        ]);
+
+        $user->setRoles($roles->roles);
+
+        $dm->save($user);
 
         $guardHandler->authenticateUserAndHandleSuccess(
             $user,

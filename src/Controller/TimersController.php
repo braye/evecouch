@@ -17,6 +17,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 
 use App\Entity\CorpStructureList;
 use App\CouchDB\DocumentManager;
+use App\Api\Esi;
 
 class TimersController extends AbstractController
 {
@@ -60,20 +61,9 @@ class TimersController extends AbstractController
 
     private function updateStructures()
     {
-        $configuration = Configuration::getInstance();
-        $configuration->file_cache_location = getenv('ESI_CACHE_DIRECTORY');
-        $configuration->logfile_location = getenv('ESI_LOG_DIRECTORY');
-        $configuration->cache = FileCache::class;
-
         $user = $this->getUser();
 
-        $authentication = new EsiAuthentication([
-            'client_id'     => getenv('ESI_CLIENT_ID'),
-            'secret'        => getenv('ESI_SECRET_KEY'),
-            'refresh_token' => $user->getRefreshToken(),
-        ]);
-
-        $esi = new Eseye($authentication);
+        $esi = Esi::getApiHandleForUser($user);
 
         $dm = new DocumentManager('structures');
 
@@ -115,12 +105,12 @@ class TimersController extends AbstractController
             throw $e;
         }
 
-        usort($structureDetails, function($a, $b){
+        !empty($structureDetails) ? usort($structureDetails, function($a, $b){
             if($a['fuel_expires'] == $b['fuel_expires']){
                 return 0;
             }
             return ($a['fuel_expires'] < $b['fuel_expires']) ? -1 : 1;
-        });
+        }) : $structureDetails = [];
 
         $structureList->setStructures($structureDetails);
         $dm->save($structureList);
