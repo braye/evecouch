@@ -1,0 +1,26 @@
+{% extends 'base.html.twig' %}
+
+
+{% block body %}
+<h1 class="title">Renter Taxes</h1>
+{% if corporations|length > 0 %}
+{# <h3>Payments due for {{month}} {{year}}</h3> #}
+{# <a class="button is-primary" href="/fueltimers?refresh=true">Refresh from API</a> #}
+<table class="table">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Payment Expected</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for corporation in corporations %}
+            <tr>
+                <td>{{corporation.corpName}}</td>
+                <td>{{corporation.amount}}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+{% endblock %}
