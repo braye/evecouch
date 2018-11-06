@@ -47,6 +47,11 @@ class User extends CouchEntity implements UserInterface
      */
     protected $corporationId;
 
+    /**
+     * @ORM\Column(type="array")
+     */
+    protected $eveRoles = [];
+
     public function getCharacterId(): ?string
     {
         return $this->_id;
@@ -164,6 +169,18 @@ class User extends CouchEntity implements UserInterface
     public function setCorporationId(string $corporationId): self
     {
         $this->corporationId = $corporationId;
+
+        return $this;
+    }
+
+    public function getEveRoles(): ?array
+    {
+        return $this->eveRoles;
+    }
+
+    public function setEveRoles(array $eveRoles): self
+    {
+        $this->eveRoles = $eveRoles;
 
         return $this;
     }

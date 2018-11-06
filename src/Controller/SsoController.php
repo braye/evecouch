@@ -104,7 +104,7 @@ class SsoController extends AbstractController
                 'character_id' => $user->getCharacterId()
         ]);
 
-        $user->setRoles($roles->roles);
+        $user->setEveRoles($roles->roles);
 
         $dm->save($user);
 

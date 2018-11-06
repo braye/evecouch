@@ -36,6 +36,7 @@ class UserRepository extends ServiceEntityRepository
             $user->setAccessToken($userDoc['accessToken']);
             $user->setRefreshToken($userDoc['refreshToken']);
             $user->setCorporationId($userDoc['corporationId']);
+            $user->setEveRoles($userDoc['eveRoles']);
             return $user;
         } else {
             return null;
