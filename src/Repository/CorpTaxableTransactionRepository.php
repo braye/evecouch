@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Entity\CorpTaxableTransaction;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Symfony\Bridge\Doctrine\RegistryInterface;
+use App\CouchDB\DocumentManager;
 
 /**
  * @method CorpTaxableTransaction|null find($id, $lockMode = null, $lockVersion = null)
@@ -38,6 +39,12 @@ class CorpTaxableTransactionRepository extends ServiceEntityRepository
         } else {
             return null;
         }
+    }
+
+    public function getAllCorpTaxView($allianceId, $year, $month)
+    {
+        $dm = new DocumentManager('corp_tax');
+
     }
 
 //    /**
