@@ -21,6 +21,7 @@ use App\Entity\User;
 class TaxesController extends AbstractController
 {
     // the ref_types the EVE api uses to categorize taxes, the stuff we're taxing on
+    // TODO: consider making this configurable using the CorpTaxConfig?
     const BOUNTY_REF_TYPES = ['bounty_prize', 'bounty_prizes', 'agent_mission_time_bonus_reward_corporation_tax'];
 
     /**
@@ -75,25 +76,8 @@ class TaxesController extends AbstractController
         $taxConfig = $this->getDoctrine()->getRepository(CorpTaxConfig::class)->find($corpInfo->alliance_id);
         // directors in executor corps can view all corp payments and set up taxing for the alliance
         if(($user->getCorporationId() == $allianceInfo->executor_corporation_id) && $isDirector) {
-            // this is a bit of an awful mess, but it's required to create tax configurations
             if(empty($taxConfig)){
-                $taxConfig = new CorpTaxConfig();
-                $taxConfig->setAllianceId($corpInfo->alliance_id);
-                $form = $this->createForm(TaxConfigForm::class, $taxConfig);
-                $form->handleRequest($request);
-                
-                if($form->isSubmitted() && $form->isValid()) {
-                    $taxConfig = $form->getData();
-                    $dm = new DocumentManager('corp_tax_config');
-                    $dm->save($taxConfig);
-                    return $this->redirectToRoute('taxes');
-                }
-
-                return $this->render('taxes/taxconfig.html.twig', [
-                    'alliance_name' => $allianceInfo->name,
-                    'alliance_id' => $corpInfo->alliance_id,
-                    'form' => $form->createView()
-                ]);
+                return $this->redirectToRoute('taxConfig');
             }
 
             $corps = [];
@@ -114,7 +98,7 @@ class TaxesController extends AbstractController
                 //this is so ugly omg
                 $obj->corpName = $allianceCorpInfo[$obj->corpId]->name;
                 unset($allianceCorpInfo[$obj->corpId]);
-                $obj->amount = $result['value'];
+                $obj->amount = $result['value'] * $taxConfig->getTaxRate();
                 $results[] = $obj;
             }
 
@@ -122,8 +106,10 @@ class TaxesController extends AbstractController
                 'alliance_name' => $allianceInfo->name,
                 'alliance_id' => $corpInfo->alliance_id,
                 'results' => $results,
-                'date' => ($year . '/' . $month),
-                'unavailable_corps' => $allianceCorpInfo
+                'year' => $year,
+                'month' => $month,
+                'unavailable_corps' => $allianceCorpInfo,
+                'is_executor' => true
             ]);
         } else if ($isDirector) {
             // show overview of your corp
@@ -136,11 +122,12 @@ class TaxesController extends AbstractController
             $repo = $this->getDoctrine()->getRepository(CorpTaxableTransaction::class);
             $view = $repo->getCorpTaxView($user->getCorporationId(), $year, $month);
 
-            return $this->render('taxes/corporation.html.twig', [
+            return $this->render('taxes/alliance.html.twig', [
                 'alliance_name' => $allianceInfo->name,
                 'alliance_id' => $corpInfo->alliance_id,
                 'results' => $view[0],
-                'date' => ($year . '/' . $month),
+                'year' => $year,
+                'month' => $month
             ]);
         } else {
             return $this->render('taxes/index.html.twig', [
@@ -205,6 +192,71 @@ class TaxesController extends AbstractController
     }
 
     /**
+     * @Route("/taxes/config", name="taxConfig")
+     */
+    public function updateTaxConfig(Request $request)
+    {
+        try{
+            $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
+        } catch(AccessDeniedException $e) {
+            return $this->render('taxes/index.html.twig', [
+                'error_message' => 'Please log in to access this page.'
+            ]);
+        }
+
+        $user = $this->getUser();
+        $esi = Esi::getApiHandleForUser($user);
+
+        try{
+            $corpInfo = $esi->invoke('get', '/corporations/{corporation_id}/', [
+                'corporation_id' => $user->getCorporationId()
+            ]);
+
+            if(empty($corpInfo->alliance_id))
+                return $this->render('taxes/index.html.twig', [
+                    'warning_message' => 'Your corporation is not in an alliance. This module won\'t be of much use to you.'
+                ]);
+            
+            $allianceInfo = $esi->invoke('get', '/alliances/{alliance_id}/', [
+                'alliance_id' => $corpInfo->alliance_id
+            ]);
+        } catch (RequestFailedException $e) {
+            return $this->render('taxes/index.html.twig', [
+                'error_message' => $e->getMessage()
+            ]);
+        }
+
+        $isDirector = in_array('Director', $user->getEveRoles());
+        $taxConfig = $this->getDoctrine()->getRepository(CorpTaxConfig::class)->find($corpInfo->alliance_id);
+        // only directors of alliance executor corps can configure tax rates
+        if(($user->getCorporationId() == $allianceInfo->executor_corporation_id) && $isDirector) {
+            if(empty($taxConfig)){
+                $taxConfig = new CorpTaxConfig();
+                $taxConfig->setAllianceId($corpInfo->alliance_id);
+            }
+            $form = $this->createForm(TaxConfigForm::class, $taxConfig);
+            $form->handleRequest($request);
+            
+            if($form->isSubmitted() && $form->isValid()) {
+                $taxConfig = $form->getData();
+                $dm = new DocumentManager('corp_tax_config');
+                $dm->save($taxConfig);
+                return $this->redirectToRoute('taxes');
+            }
+
+            return $this->render('taxes/taxconfig.html.twig', [
+                'alliance_name' => $allianceInfo->name,
+                'alliance_id' => $corpInfo->alliance_id,
+                'form' => $form->createView()
+            ]);
+
+        } else {
+            $this->redirectToRoute('taxes');
+        }
+
+    }
+
+    /**
      * Read the corporation's journal entries, looking for taxable income (bounties, mission reward taxes)
      *
      * @return bool
@@ -224,7 +276,6 @@ class TaxesController extends AbstractController
         $taxConfig = $this->getDoctrine()->getRepository(CorpTaxConfig::class)->find($allianceId);
         if(empty($taxConfig))
             return false;
-        $taxRate = $taxConfig->getTaxRate();
 
         while(!$emptyResult){
             try{
@@ -249,7 +300,7 @@ class TaxesController extends AbstractController
                         $date = new \DateTime($transaction->date);
                         $tx = new CorpTaxableTransaction();
                         $tx->setTransactionId($transaction->id);
-                        $tx->setAmount($transaction->amount * $taxRate);
+                        $tx->setAmount($transaction->amount);
                         $tx->setMonth($date->format('m'));
                         $tx->setYear($date->format('Y'));
                         $tx->setRefType($transaction->ref_type);

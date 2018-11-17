@@ -1,45 +1,55 @@
 {% extends 'base.html.twig' %}
 
+{% block title %}Alliance Taxing Overview{% endblock %}
+
 
 {% block body %}
-<h1 class="title">Renter Taxes for {{date}}</h1>
-<form action="">
-    <div class="field is-grouped">
-        <div class="control">
-            <div class="select">
-                <select>
-                <option value="2018">2018</option>
-                <option value="2019">2019</option>
-                </select>
-            </div>
+<script>
+    window.onload = function(){
+        submit = document.querySelector('#change_month');
+        submit.addEventListener('click', function(){
+            year = document.querySelector('#year_select').value
+            month = document.querySelector('#month_select').value
+            window.location = window.location.origin + window.location.pathname + '?year=' + year + '&month=' + month;
+        });
+    }
+</script>
+<h1 class="title">Renter Taxes for {{date(year ~ '-' ~ month ~ '-01')|date('F Y')}}</h1>
+<div class="field is-grouped">
+    <div class="control">
+        <div class="select">
+            <select id="year_select">
+            <option value="2018">2018</option>
+            <option value="2019">2019</option>
+            </select>
         </div>
-        <div class="control">
-            <div class="select">
-                <select>
-                <option value="1">January</option>
-                <option value="2">February</option>
-                <option value="3">March</option>
-                <option value="4">April</option>
-                <option value="5">May</option>
-                <option value="6">June</option>
-                <option value="7">July</option>
-                <option value="8">August</option>
-                <option value="9">September</option>
-                <option value="10">October</option>
-                <option value="11">November</option>
-                <option value="12">December</option>
-                </select>
-            </div>
-        </div>
-        <p class="control">
-                <a class="button is-primary">
-                Submit
-                </a>
-            </p>
     </div>
-</form>
+    <div class="control">
+        <div class="select">
+            <select id="month_select">
+            {% for mon in range(1,12) %}
+                <option value="{{mon}}"
+                {% if month == mon %}
+                selected
+                {% endif %}
+                >
+                    {{date(year ~ '-' ~ mon ~ '-01')|date('F')}}
+                </option>
+            {% endfor %}
+            </select>
+        </div>
+    </div>
+    <p class="control">
+            <a class="button is-primary" id="change_month">
+            Submit
+            </a>
+        </p>
+</div>
 <br>
 <a class="button is-primary" href="/taxes/update">Refresh from API</a>
+{% if executor is defined %}
+<a class="button is-primary" href="/taxes/config">Configure Taxing</a>
+{% endif %}
 {% if results|length > 0 %}
 <table class="table">
     <thead>
@@ -72,6 +82,7 @@
 {% endif %}
 
 {% else %}
+    <br><br>
     <section class="hero is-primary">
     <div class="hero-body">
         <div class="container">
@@ -79,7 +90,7 @@
             No Data
         </h1>
         <h2 class="subtitle">
-            There is no data available for this time period. Please select another year/month or select "update" above.
+            There is no data available for this time period. Please select another year/month or select "Refresh from API" above.
         </h2>
         </div>
     </div>
