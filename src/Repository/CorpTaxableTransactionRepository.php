@@ -25,10 +25,10 @@ class CorpTaxableTransactionRepository extends ServiceEntityRepository
         if(is_array($id)){
             $id = $id['_id'];
         }
-        $dm = new DocumentManager('corp_tax');
+        $dm = new DocumentManager('corp_taxes');
         $doc = $dm->getById($id);
         if(!empty($doc)){
-            $obj = new CorpStructureList();
+            $obj = new CorpTaxableTransaction();
             $obj->setTransactionId($doc['_id']);
             $obj->setAmount($doc['amount']);
             $obj->setMonth($doc['month']);
@@ -41,38 +41,28 @@ class CorpTaxableTransactionRepository extends ServiceEntityRepository
         }
     }
 
-    public function getAllCorpTaxView($allianceId, $year, $month)
+    public function getMultiCorpTaxView(array $corpIds, int $year, int $month)
     {
-        $dm = new DocumentManager('corp_tax');
+        $keys = [];
+        foreach($corpIds as $corp){
+            $keys[] = [$corp, $year, $month];
+        }
 
+        $dm = new DocumentManager('corp_taxes');
+        $query = $dm->createViewQuery('taxesByMonth', 'corp-taxes-by-month');
+        $query->setReduce(true);
+        $query->setGroup(true);
+        $query->setKeys($keys);
+        return $query->execute();
     }
 
-//    /**
-//     * @return CorpTaxableTransaction[] Returns an array of CorpTaxableTransaction objects
-//     */
-    /*
-    public function findByExampleField($value)
+    public function getCorpTaxView(int $corpId, int $year, int $month)
     {
-        return $this->createQueryBuilder('c')
-            ->andWhere('c.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('c.id', 'ASC')
-            ->setMaxResults(10)
-            ->getQuery()
-            ->getResult()
-        ;
+        $dm = new DocumentManager('corp_taxes');
+        $query = $dm->createViewQuery('taxesByMonth', 'corp-taxes-by-month');
+        $query->setReduce(true);
+        $query->setKey([$corpId, $year, $month]);
+        return $query->execute();
     }
-    */
 
-    /*
-    public function findOneBySomeField($value): ?CorpTaxableTransaction
-    {
-        return $this->createQueryBuilder('c')
-            ->andWhere('c.exampleField = :val')
-            ->setParameter('val', $value)
-            ->getQuery()
-            ->getOneOrNullResult()
-        ;
-    }
-    */
 }
