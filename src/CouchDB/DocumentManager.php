@@ -51,4 +51,9 @@ class DocumentManager
             throw $e;
         }
     }
+
+    public function createViewQuery($designDoc, $view)
+    {
+        return $this->client->createViewQuery($designDoc, $view);
+    }
 }

@@ -1,0 +1,32 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Updating Transactions{% endblock %}
+
+{% block body %}
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Updated Successfully</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for corporation in results %}
+            <tr>
+                <td>{{corporation.info.name}}</td>
+                <td>
+                    {% if corporation.success %}
+                        <span class="tag is-success">Yes</span>
+                    {% else %}
+                        <span class="tag is-danger">No</span>
+                    {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<br>
+<a class="button is-primary is-large" href="/taxes">Return</a>
+
+{% endblock %}

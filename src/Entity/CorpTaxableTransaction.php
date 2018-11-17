@@ -52,7 +52,7 @@ class CorpTaxableTransaction extends CouchEntity
         return $this->amount;
     }
 
-    public function setAmount(string $amount): self
+    public function setAmount(int $amount): self
     {
         $this->amount = $amount;
 
@@ -76,7 +76,7 @@ class CorpTaxableTransaction extends CouchEntity
         return $this->corporationId;
     }
 
-    public function setCorporationId(string $corporationId): self
+    public function setCorporationId(int $corporationId): self
     {
         $this->corporationId = $corporationId;
 
@@ -95,7 +95,7 @@ class CorpTaxableTransaction extends CouchEntity
         return $this->month;
     }
 
-    public function setMonth(string $month): self
+    public function setMonth(int $month): self
     {
         $this->month = $month;
 
@@ -107,7 +107,7 @@ class CorpTaxableTransaction extends CouchEntity
         return $this->year;
     }
 
-    public function setYear(string $year): self
+    public function setYear(int $year): self
     {
         $this->year = $year;
 

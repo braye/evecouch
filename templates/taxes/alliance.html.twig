@@ -1,11 +1,56 @@
 {% extends 'base.html.twig' %}
 
+{% block title %}Alliance Taxing Overview{% endblock %}
+
 
 {% block body %}
-<h1 class="title">Renter Taxes</h1>
-{% if corporations|length > 0 %}
-{# <h3>Payments due for {{month}} {{year}}</h3> #}
-{# <a class="button is-primary" href="/fueltimers?refresh=true">Refresh from API</a> #}
+<script>
+    window.onload = function(){
+        submit = document.querySelector('#change_month');
+        submit.addEventListener('click', function(){
+            year = document.querySelector('#year_select').value
+            month = document.querySelector('#month_select').value
+            window.location = window.location.origin + window.location.pathname + '?year=' + year + '&month=' + month;
+        });
+    }
+</script>
+<h1 class="title">Renter Taxes for {{date(year ~ '-' ~ month ~ '-01')|date('F Y')}}</h1>
+<div class="field is-grouped">
+    <div class="control">
+        <div class="select">
+            <select id="year_select">
+            <option value="2018">2018</option>
+            <option value="2019">2019</option>
+            </select>
+        </div>
+    </div>
+    <div class="control">
+        <div class="select">
+            <select id="month_select">
+            {% for mon in range(1,12) %}
+                <option value="{{mon}}"
+                {% if month == mon %}
+                selected
+                {% endif %}
+                >
+                    {{date(year ~ '-' ~ mon ~ '-01')|date('F')}}
+                </option>
+            {% endfor %}
+            </select>
+        </div>
+    </div>
+    <p class="control">
+            <a class="button is-primary" id="change_month">
+            Submit
+            </a>
+        </p>
+</div>
+<br>
+<a class="button is-primary" href="/taxes/update">Refresh from API</a>
+{% if executor is defined %}
+<a class="button is-primary" href="/taxes/config">Configure Taxing</a>
+{% endif %}
+{% if results|length > 0 %}
 <table class="table">
     <thead>
         <tr>
@@ -14,13 +59,41 @@
         </tr>
     </thead>
     <tbody>
-        {% for corporation in corporations %}
+        {% for corporation in results %}
             <tr>
                 <td>{{corporation.corpName}}</td>
-                <td>{{corporation.amount}}</td>
+                <td>{{corporation.amount|number_format}}</td>
             </tr>
         {% endfor %}
     </tbody>
 </table>
+{% if unavailable_corps|length > 0 %}
+<div class="notification is-warning">
+    <p>
+    The following corporations were not available:
+    </p>
+    <ul>
+    {% for corporation in unavailable_corps %}
+        <li>{{corporation.name}}</li>
+    {% endfor %}
+    </ul>
+    <p>Make sure that a director from each corporation is registered in this module.</p>
+</div>
+{% endif %}
+
+{% else %}
+    <br><br>
+    <section class="hero is-primary">
+    <div class="hero-body">
+        <div class="container">
+        <h1 class="title">
+            No Data
+        </h1>
+        <h2 class="subtitle">
+            There is no data available for this time period. Please select another year/month or select "Refresh from API" above.
+        </h2>
+        </div>
+    </div>
+    </section>
 {% endif %}
 {% endblock %}
