@@ -22,7 +22,7 @@ class TaxesController extends AbstractController
 {
     // the ref_types the EVE api uses to categorize taxes, the stuff we're taxing on
     // TODO: consider making this configurable using the CorpTaxConfig?
-    const BOUNTY_REF_TYPES = ['bounty_prize', 'bounty_prizes', 'agent_mission_time_bonus_reward_corporation_tax'];
+    const BOUNTY_REF_TYPES = ['bounty_prize', 'bounty_prizes'];
 
     /**
      * @Route("/taxes", name="taxes")
@@ -268,7 +268,6 @@ class TaxesController extends AbstractController
         if($directors->count() == 0)
             return false;
         $user = $repo->find($directors[0]['id']);
-        $user = $this->getUser();
         $esi = Esi::getApiHandleForUser($user);
         $dm = new DocumentManager('corp_taxes');
         $pageNum = 1;
@@ -277,39 +276,46 @@ class TaxesController extends AbstractController
         if(empty($taxConfig))
             return false;
 
-        while(!$emptyResult){
-            try{
-                $esi->page($pageNum);
-                $transactions = $esi->invoke('get', '/corporations/{corporation_id}/wallets/1/journal', [
-                    'corporation_id' => $user->getCorporationId(),
-                ]);
-            } catch (RequestFailedException $e) {
-                return false;
-            }
+        try{
+            $wallets = $esi->invoke('get', '/corporations/{corporation_id}/wallets', [
+                'corporation_id' => $corpId
+            ]);
             
-            if($transactions->count() == 0){
-                // we've reached the end of the journal
-                $emptyResult = true;
-                break;
-            }
-
-            foreach($transactions as $transaction){
-                if(in_array($transaction->ref_type, $this::BOUNTY_REF_TYPES)){
-                    $existingTx = $this->getDoctrine()->getRepository(CorpTaxableTransaction::class)->find($transaction->id);
-                    if(empty($existingTx)){
-                        $date = new \DateTime($transaction->date);
-                        $tx = new CorpTaxableTransaction();
-                        $tx->setTransactionId($transaction->id);
-                        $tx->setAmount($transaction->amount);
-                        $tx->setMonth($date->format('m'));
-                        $tx->setYear($date->format('Y'));
-                        $tx->setRefType($transaction->ref_type);
-                        $tx->setCorporationId($corpId);
-                        $dm->save($tx);
+            foreach($wallets as $wallet){
+                while(!$emptyResult){
+                    $esi->page($pageNum);
+                    $transactions = $esi->invoke('get', '/corporations/{corporation_id}/wallets/{division}/journal', [
+                        'corporation_id' => $corpId,
+                        'division' => $wallet->division
+                    ]);
+                    
+                    if($transactions->count() == 0){
+                        // we've reached the end of the journal
+                        $emptyResult = true;
+                        break;
                     }
+
+                    foreach($transactions as $transaction){
+                        if(in_array($transaction->ref_type, $this::BOUNTY_REF_TYPES)){
+                            $existingTx = $this->getDoctrine()->getRepository(CorpTaxableTransaction::class)->find($transaction->id);
+                            if(empty($existingTx)){
+                                $date = new \DateTime($transaction->date);
+                                $tx = new CorpTaxableTransaction();
+                                $tx->setTransactionId($transaction->id);
+                                $tx->setAmount($transaction->amount);
+                                $tx->setMonth($date->format('m'));
+                                $tx->setYear($date->format('Y'));
+                                $tx->setRefType($transaction->ref_type);
+                                $tx->setCorporationId($corpId);
+                                $dm->save($tx);
+                            }
+                        }
+                    }
+                    $pageNum++;
                 }
             }
-            $pageNum++;
+        } catch (RequestFailedException $e){
+            return false;
         }
         return true;
     }
