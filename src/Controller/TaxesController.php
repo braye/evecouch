@@ -125,9 +125,10 @@ class TaxesController extends AbstractController
             return $this->render('taxes/alliance.html.twig', [
                 'alliance_name' => $allianceInfo->name,
                 'alliance_id' => $corpInfo->alliance_id,
-                'results' => $view[0],
+                'results' => array(array('corpName' => $corpInfo->name, 'amount' => $view[0]['value'])),
                 'year' => $year,
-                'month' => $month
+                'month' => $month,
+                'unavailable_corps' => []
             ]);
         } else {
             return $this->render('taxes/index.html.twig', [
